@@ -9,6 +9,28 @@
       docker_network:
         name: "{{ DOCKER_NETWORK_NAME }}"
 
+- name: Setup Google credentials
+  hosts: dev, prod
+  tasks:
+    - name: Create directory for google credentials
+      file:
+        path: "{{ GOOGLE_CREDENTIALS_PATH }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: 0644
+      become: yes
+    - name: Copy Google credentials from Ansible Vault
+      loop: "{{ google_credentials }}"
+      copy:
+        content: "{{ item.content }}"
+        dest: "{{ GOOGLE_CREDENTIALS_PATH }}/{{ item.name }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: 0600
+      become: yes
+      no_log: true
+
 - name: redis
   hosts: dev, prod
   tasks:
@@ -55,6 +77,7 @@
         pull: yes
         volumes:
           - "static_files:{{ django_env.STATIC_ROOT }}"
+          - "{{ GOOGLE_CREDENTIALS_PATH }}:/etc/google-credentials"
         env:
           "{{ django_env | combine(shared_django_env) | combine(uwsgi_env) }}"
         networks_cli_compatible: yes

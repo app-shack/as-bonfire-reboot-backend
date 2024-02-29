@@ -1,7 +1,6 @@
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.throttling import AnonRateThrottle
-from rest_framework_simplejwt.views import TokenObtainPairView
 
 from . import permissions, serializers
 
@@ -38,5 +37,7 @@ class LoginThrottle(AnonRateThrottle):
         return 10, 60 * 15  # 10 requests per 15 minutes
 
 
-class UserTokenObtainPairView(TokenObtainPairView):
+class UserTokenObtainPairView(generics.CreateAPIView):
     throttle_classes = (LoginThrottle,)
+    serializer_class = serializers.UserTokenObtainPairSerializer
+    permission_classes = (AllowAny,)

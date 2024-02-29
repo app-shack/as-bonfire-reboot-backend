@@ -13,6 +13,7 @@ services:
       - "bonfire_static_files:/var/www/static/"
       - "bonfire_media_files:/var/www/media/"
       - "./bonfire:/app"
+      - "./local/credentials:/etc/credentials/"
     # Use runserver for local development not uwsgi
     command: "python manage.py runserver 0.0.0.0:8000"
     ports:

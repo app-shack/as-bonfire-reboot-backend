@@ -8,6 +8,8 @@ REGISTRY_URL: "992382671981.dkr.ecr.eu-north-1.amazonaws.com"
 DOCKER_REPO: "{{ REGISTRY_URL }}/{{ DOCKER_IMAGE_NAME }}"
 DOCKER_IMAGE: "{{ DOCKER_REPO }}:{{ DOCKER_IMAGE_TAG }}"
 
+GOOGLE_CREDENTIALS_PATH: "/etc/credentials/google/"
+
 shared_django_env:
   SENTRY_DSN: "{{ vault_SENTRY_DSN }}"
   FORCE_SCRIPT_NAME: "/api"

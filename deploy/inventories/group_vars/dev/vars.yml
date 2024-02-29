@@ -38,3 +38,7 @@ django_env:
 
   # 2FA vars
   OTP_TOTP_ISSUER: "bonfire Dev"
+
+  # Google
+  GOOGLE_WHITELIST_DOMAIN: "appshack.se"
+  GOOGLE_APPLICATION_CREDENTIALS: "{{ GOOGLE_CREDENTIALS_PATH }}/google_credentials.json"
