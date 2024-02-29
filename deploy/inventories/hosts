@@ -1,0 +1,13 @@
+[dev]
+51.21.43.227
+
+[dev:vars]
+ansible_user=ubuntu
+ansible_distribution=ubuntu
+
+[prod]
+
+
+[prod:vars]
+ansible_user=ubuntu
+ansible_distribution=ubuntu

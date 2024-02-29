@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  redis-bonfire-ci:
+    image: redis:6.2
+    container_name: redis-bonfire-ci
+
+  postgres-bonfire-ci:
+    image: postgres:13.4
+    container_name: postgres-bonfire-ci
+    environment:
+      - POSTGRES_USER=test
+      - POSTGRES_PASSWORD=password
+
+  django-bonfire-ci:
+    build: ../
+    container_name: django-bonfire-ci
+    depends_on:
+      - postgres-bonfire-ci
+      - redis-bonfire-ci
+    environment:
+      DB_HOST: postgres-bonfire-ci
+      DB_USER: test
+      DB_PASSWORD: password
+      REDIS_URL: "redis://redis-bonfire-ci:6379/2"
+      SECRET_KEY: "ci-test"
+      DEBUG: "False"

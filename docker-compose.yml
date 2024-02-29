@@ -1,0 +1,70 @@
+version: "3.2"
+
+services:
+  django:
+    build: .
+    image: django-bonfire
+    container_name: django-bonfire
+    depends_on:
+      - postgres
+      - redis
+    env_file: .env
+    volumes:
+      - "bonfire_static_files:/var/www/static/"
+      - "bonfire_media_files:/var/www/media/"
+      - "./bonfire:/app"
+    # Use runserver for local development not uwsgi
+    command: "python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  postgres:
+    image: postgres:13.4
+    container_name: postgres-bonfire
+    environment:
+      POSTGRES_DB: bonfire
+      POSTGRES_PASSWORD: supersecret
+    volumes:
+      - "bonfire_dbdata:/var/lib/postgresql/data"
+    # Expose port to localhost for debugging
+    ports:
+      - "127.0.0.1:5433:5432"
+
+  redis:
+    image: redis:6.2
+    container_name: redis-bonfire
+
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    container_name: rabbitmq-bonfire
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=b0lag
+
+  celery-scheduler:
+    image: django-bonfire
+    container_name: celery-scheduler-bonfire
+    depends_on:
+      - django
+    env_file: .env
+    entrypoint: "celery -A bonfire beat -l info"
+    volumes:
+      - "./bonfire:/app"
+
+  celery-worker:
+    image: django-bonfire
+    container_name: celery-worker-bonfire
+    depends_on:
+      - django
+      - rabbitmq
+    env_file: .env
+    entrypoint: "celery -A bonfire worker -l info"
+    volumes:
+      - "bonfire_static_files:/var/www/static/"
+      - "bonfire_media_files:/var/www/media/"
+      - "./bonfire:/app"
+
+volumes:
+  bonfire_dbdata:
+  bonfire_static_files:
+  bonfire_media_files:

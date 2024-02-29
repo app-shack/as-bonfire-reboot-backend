@@ -1,0 +1,40 @@
+# Global vars
+DOMAIN_NAME: "bonfire.betashack.se"
+RABBITMQ_USER: "devrabbitmquser"
+RABBITMQ_PASSWORD: "{{ vault_RABBITMQ_PASSWORD }}"
+
+uwsgi_env:
+  ALLOWED_HOSTS: "{{ DOMAIN_NAME }}"
+  CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000"
+
+  # Nginx-gen vars
+  VIRTUAL_HOST: "{{ DOMAIN_NAME }}"
+  VIRTUAL_PORT: "3030"
+  VIRTUAL_PROTO: "uwsgi"
+
+django_env:
+  DOMAIN_NAME: "{{ DOMAIN_NAME }}"
+  ENV: "DEV"
+
+  # Django vars
+  DEBUG: "False"
+  USE_DEBUG: "False"
+  SECRET_KEY: "{{ vault_SECRET_KEY }}"
+  DEFAULT_FILE_STORAGE: ""
+  
+  # Database vars
+  DB_USER: "bonfire"
+  DB_PASSWORD: "{{ vault_DB_PASSWORD }}"
+  DB_HOST: "dev-20240229160915087900000001.ctkwgoo6ao0h.eu-north-1.rds.amazonaws.com"
+  DB_NAME: "bonfire"
+
+  # Static files
+  STATIC_ROOT: "/var/www/static/"
+  STATICFILES_STORAGE: "whitenoise.storage.CompressedManifestStaticFilesStorage"
+  
+  # Celery vars
+  REDIS_URL: "redis://redis:6379/2"
+  CELERY_BROKER_URL: "pyamqp://{{ RABBITMQ_USER }}:{{ RABBITMQ_PASSWORD }}@rabbitmq:5672"
+
+  # 2FA vars
+  OTP_TOTP_ISSUER: "bonfire Dev"

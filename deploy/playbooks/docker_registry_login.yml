@@ -1,0 +1,10 @@
+---
+
+- hosts: all
+  tasks:
+    - name: Login into AWS Container Registry
+      shell: aws ecr get-login-password --region eu-north-1 | docker login --password-stdin -u AWS {{ DOCKER_REPO }}
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ DOCKER_ID }}"
+        AWS_SECRET_ACCESS_KEY: "{{ DOCKER_PASSWORD }}"
+      when: REGISTRY_URL is search("amazonaws.com")
