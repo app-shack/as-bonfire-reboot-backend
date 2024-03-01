@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 import os
 
 from django.conf import settings
@@ -24,8 +25,16 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+
+router.register("devices", FCMDeviceAuthorizedViewSet)
+
 
 urlpatterns = [
+    path("", include(router.urls)),
     path("admin/", admin.site.urls),
     path("users/", include("users.urls", namespace="users")),
     path("versions/", include("versions.urls", namespace="versions")),

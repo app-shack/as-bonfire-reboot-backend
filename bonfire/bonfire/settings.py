@@ -16,6 +16,7 @@ import sys
 from datetime import timedelta
 
 import sentry_sdk
+from firebase_admin import initialize_app
 from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -59,6 +60,7 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_static",
     "drf_spectacular",
     "rest_framework_simplejwt.token_blacklist",
+    "spec.apps.FcmDjangoConfig",
     # First party
     "bonfire.apps.OTPAdminConfig",
     "users",
@@ -183,6 +185,24 @@ CORS_ORIGIN_ALLOW_ALL = DEBUG
 CORS_ALLOWED_ORIGINS = list(
     filter(None, os.getenv("CORS_ALLOWED_ORIGINS", "").split(","))
 )
+
+# FCM
+FIREBASE_APP = initialize_app()
+FCM_DJANGO_SETTINGS = {
+    # default: _('FCM Django')
+    "APP_VERBOSE_NAME": "FCM Django",
+    # true if you want to have only one active device per registered user at a time
+    # default: False
+    "ONE_DEVICE_PER_USER": False,
+    # devices to which notifications cannot be sent,
+    # are deleted upon receiving error response from FCM
+    # default: False
+    "DELETE_INACTIVE_DEVICES": True,
+    # Transform create of an existing Device (based on registration id) into
+    # an update. See the section
+    # "Update of device with duplicate registration ID" for more details.
+    "UPDATE_ON_DUPLICATE_REG_ID": True,
+}
 
 # Google
 GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
