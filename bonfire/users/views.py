@@ -30,6 +30,12 @@ class UserMeView(generics.RetrieveUpdateDestroyAPIView):
         return self.request.user
 
 
+class UserMeCoordinatesView(generics.UpdateAPIView):
+    http_method_names = ["put"]
+    serializer_class = serializers.UserMeCoordinatesSerializer
+    permission_classes = (IsAuthenticated,)
+
+
 class LoginThrottle(AnonRateThrottle):
     rate = "overriden/below"  # Needed but overriden by parse_rate()
 
