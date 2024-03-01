@@ -32,6 +32,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = False if not os.getenv("DEBUG") == "True" else True
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+CSRF_TRUSTED_ORIGINS = [
+    "https://5d1d-213-212-58-50.ngrok-free.app",
+]
 DOMAIN_NAME = os.getenv("DOMAIN_NAME", "localhost:8000")
 
 # Security settings
@@ -62,6 +65,7 @@ INSTALLED_APPS = [
     # First party
     "bonfire.apps.OTPAdminConfig",
     "users",
+    "slack_client",
     "versions",
 ]
 
@@ -222,6 +226,10 @@ sentry_sdk.init(
     # django.contrib.auth) you may enable sending PII data.
     send_default_pii=True,
 )
+
+# Slack
+SLACK_TOKEN = os.getenv("SLACK_TOKEN", "")
+WORK_LOCATION_CHANNEL_ID = os.getenv("WORK_LOCATION_CHANNEL_ID", "")
 
 if DEBUG:
     TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"

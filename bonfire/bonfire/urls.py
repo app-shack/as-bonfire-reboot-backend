@@ -28,6 +28,7 @@ from drf_spectacular.views import (
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("users/", include("users.urls", namespace="users")),
+    path("slack/", include("slack_client.urls", namespace="slack_client")),
     path("versions/", include("versions.urls", namespace="versions")),
 ]
 

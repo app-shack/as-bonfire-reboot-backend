@@ -15,6 +15,8 @@ class UserMeSerializer(serializers.ModelSerializer):
         ]
     )
 
+    vibe_gif = serializers.URLField(required=False)
+
     class Meta:
         model = models.User
         fields = (
@@ -22,8 +24,18 @@ class UserMeSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
+            "vibe_gif",
         )
         read_only_fields = ("id",)
+
+
+class GetVibesSerializer(serializers.ModelSerializer):
+    count = serializers.IntegerField(read_only=True, default=0)
+
+    class Meta:
+        model = models.User
+        fields = ("vibe_gif", "count")
+        read_only_fields = ("count", "vibe_gif")
 
 
 class UserTokenObtainPairSerializer(serializers.Serializer):

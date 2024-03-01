@@ -1,8 +1,9 @@
+from django.db.models import Count, Subquery
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.throttling import AnonRateThrottle
 
-from . import permissions, serializers
+from . import models, permissions, serializers
 
 
 class UserMeView(generics.RetrieveUpdateDestroyAPIView):
@@ -35,6 +36,22 @@ class LoginThrottle(AnonRateThrottle):
 
     def parse_rate(self, rate):
         return 10, 60 * 15  # 10 requests per 15 minutes
+
+
+class GetVibesView(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = serializers.GetVibesSerializer
+
+    def get_queryset(self):
+        queryset = models.User.objects.exclude(vibe_gif="")
+        subquery = Subquery(
+            models.User.objects.values("vibe_gif")
+            .annotate(total=Count("vibe_gif"))
+            .values("total")[:1]
+        )
+        queryset = queryset.distinct("vibe_gif").annotate(count=subquery)
+
+        return queryset
 
 
 class UserTokenObtainPairView(generics.CreateAPIView):
