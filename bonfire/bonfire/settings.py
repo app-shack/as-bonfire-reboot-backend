@@ -38,6 +38,9 @@ DOMAIN_NAME = os.getenv("DOMAIN_NAME", "localhost:8000")
 # Security settings
 CSRF_COOKIE_SECURE = os.getenv("ENV") != "LOCAL"
 SESSION_COOKIE_SECURE = os.getenv("ENV") != "LOCAL"
+CSRF_TRUSTED_ORIGINS = [
+    "https://1807-213-212-58-50.ngrok-free.app",
+]
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
@@ -63,6 +66,8 @@ INSTALLED_APPS = [
     "spec.apps.FcmDjangoConfig",
     # First party
     "bonfire.apps.OTPAdminConfig",
+    "events",
+    "offices",
     "users",
     "versions",
 ]
@@ -73,7 +78,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",

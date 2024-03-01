@@ -36,6 +36,8 @@ router.register("devices", FCMDeviceAuthorizedViewSet)
 urlpatterns = [
     path("", include(router.urls)),
     path("admin/", admin.site.urls),
+    path("events/", include("events.urls", namespace="events")),
+    path("offices/", include("offices.urls", namespace="offices")),
     path("users/", include("users.urls", namespace="users")),
     path("versions/", include("versions.urls", namespace="versions")),
 ]

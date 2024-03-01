@@ -1,3 +1,4 @@
+from django.utils.timezone import now
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -24,6 +25,20 @@ class UserMeSerializer(serializers.ModelSerializer):
             "last_name",
         )
         read_only_fields = ("id",)
+
+
+class UserMeCoordinatesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.User
+        fields = (
+            "latitude",
+            "longitude",
+        )
+
+    def update(self, instance, validated_data):
+        validated_data["coordinates_updated_at"] = now()
+
+        return super().update(instance, validated_data)
 
 
 class UserTokenObtainPairSerializer(serializers.Serializer):

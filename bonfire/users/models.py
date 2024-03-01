@@ -4,9 +4,10 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.db import models
-from django.db.models import UniqueConstraint
-from django.db.models.functions import Lower
+from django.db.models import ExpressionWrapper, FloatField, UniqueConstraint
+from django.db.models.functions import Lower, Round
 from django.utils.translation import gettext_lazy as _
+from django_earthdistance.models import EarthDistance, LlToEarth
 
 from utils.models import TimestampedModel, UUIDModel
 
@@ -43,11 +44,41 @@ class UserManager(BaseUserManager):
     def get_by_natural_key(self, email):
         return self.get(**{self.model.USERNAME_FIELD: email.lower()})
 
+    def get_close_users_pks(self, latitude, longitude):
+        return (
+            self.annotate(
+                distance_m=Round(
+                    ExpressionWrapper(
+                        EarthDistance(
+                            [
+                                LlToEarth([latitude, longitude]),
+                                LlToEarth(["latitude", "longitude"]),
+                            ],
+                        ),
+                        output_field=FloatField(),
+                    ),
+                    1,
+                )
+            )
+            .filter(
+                distance_m__lt=100,
+            )
+            .values_list("pk", flat=True)
+        )
+
 
 class User(UUIDModel, TimestampedModel, AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=255, blank=True)
     last_name = models.CharField(max_length=255, blank=True)
+
+    latitude = models.DecimalField(
+        max_digits=9, decimal_places=6, blank=True, null=True
+    )
+    longitude = models.DecimalField(
+        max_digits=9, decimal_places=6, blank=True, null=True
+    )
+    coordinates_updated_at = models.DateTimeField(blank=True, null=True)
 
     is_staff = models.BooleanField(
         default=False,

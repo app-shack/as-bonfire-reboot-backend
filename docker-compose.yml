@@ -20,7 +20,7 @@ services:
       - "127.0.0.1:8000:8000"
 
   postgres:
-    image: postgres:13.4
+    image: postgis/postgis:15-3.4
     container_name: postgres-bonfire
     environment:
       POSTGRES_DB: bonfire
