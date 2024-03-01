@@ -1,4 +1,4 @@
-from django.db.models import Count, Subquery
+from django.db.models import Count, OuterRef, Subquery
 from rest_framework import generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.throttling import AnonRateThrottle
@@ -45,7 +45,8 @@ class GetVibesView(generics.ListAPIView):
     def get_queryset(self):
         queryset = models.User.objects.exclude(vibe_gif="")
         subquery = Subquery(
-            models.User.objects.values("vibe_gif")
+            models.User.objects.filter(vibe_gif=OuterRef("vibe_gif"))
+            .values("vibe_gif")
             .annotate(total=Count("vibe_gif"))
             .values("total")[:1]
         )
