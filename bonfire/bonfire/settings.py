@@ -231,8 +231,12 @@ REST_FRAMEWORK = {
 
 # JWT settings
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=90),
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        minutes=int(os.getenv("ACCESS_TOKEN_LIFETIME_MINUTES", 60 * 24))
+    ),
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        minutes=int(os.getenv("REFRESH_TOKEN_LIFETIME_MINUTES", 60 * 24 * 90))
+    ),
 }
 
 # 2FA
