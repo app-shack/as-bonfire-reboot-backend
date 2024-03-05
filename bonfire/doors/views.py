@@ -2,8 +2,19 @@ from django.http import Http404
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 
 from . import models, serializers
+
+
+class AuthenticatedUserRateThrottle(UserRateThrottle):
+    rate = "5/minute"
+
+    def allow_request(self, request, view):
+        if request.user.is_superuser:
+            return True
+
+        return super().allow_request(request, view)
 
 
 class DoorMixIn:
@@ -27,6 +38,7 @@ class DoorView(DoorMixIn, generics.RetrieveAPIView):
 class DoorUnlockView(DoorMixIn, generics.UpdateAPIView):
     serializer_class = serializers.DoorSerializer
     permission_classes = (IsAuthenticated,)
+    throttle_classes = (AuthenticatedUserRateThrottle,)
 
     http_method_names = [
         "patch",
@@ -42,6 +54,7 @@ class DoorUnlockView(DoorMixIn, generics.UpdateAPIView):
 class DoorLockView(DoorMixIn, generics.UpdateAPIView):
     serializer_class = serializers.DoorSerializer
     permission_classes = (IsAuthenticated,)
+    throttle_classes = (AuthenticatedUserRateThrottle,)
 
     http_method_names = [
         "patch",
