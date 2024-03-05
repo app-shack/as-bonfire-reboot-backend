@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "spec.apps.FcmDjangoConfig",
     # First party
     "bonfire.apps.OTPAdminConfig",
+    "doors",
     "users",
     "versions",
 ]
@@ -203,6 +204,11 @@ FCM_DJANGO_SETTINGS = {
     # "Update of device with duplicate registration ID" for more details.
     "UPDATE_ON_DUPLICATE_REG_ID": True,
 }
+
+# Flex
+FLEX_API_URL = os.getenv("FLEX_API_URL")
+FLEX_API_USER = os.getenv("FLEX_API_USER")
+FLEX_API_PASSWORD = os.getenv("FLEX_API_PASSWORD")
 
 # Google
 GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")

@@ -39,6 +39,11 @@ django_env:
   # 2FA vars
   OTP_TOTP_ISSUER: "bonfire Dev"
 
+  # Flex
+  FLEX_API_URL: "https://flexykey.se/MobileApp.aspx/"
+  FLEX_API_USER: "admin@appshack.se"
+  FLEX_API_PASSWORD: "{{ vault_FLEX_API_PASSWORD }}"
+
   # Google
   GOOGLE_WHITELIST_DOMAIN: "appshack.se"
   GOOGLE_APPLICATION_CREDENTIALS: "{{ GOOGLE_CREDENTIALS_PATH }}/google_credentials.json"
