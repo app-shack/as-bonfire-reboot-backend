@@ -49,6 +49,8 @@ class User(UUIDModel, TimestampedModel, AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=255, blank=True)
     last_name = models.CharField(max_length=255, blank=True)
 
+    vibe_gif = models.URLField(default="")
+
     is_staff = models.BooleanField(
         default=False,
         help_text=_("Designates whether the user can log into staff site."),

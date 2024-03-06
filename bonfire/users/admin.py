@@ -15,6 +15,7 @@ class UserAdmin(DjangoUserAdmin):
                 "fields": (
                     "first_name",
                     "last_name",
+                    "vibe_gif",
                 )
             },
         ),

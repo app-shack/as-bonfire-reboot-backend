@@ -38,6 +38,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("doors/", include("doors.urls", namespace="doors")),
     path("users/", include("users.urls", namespace="users")),
+    path("slack/", include("slack_client.urls", namespace="slack_client")),
     path("versions/", include("versions.urls", namespace="versions")),
 ]
 

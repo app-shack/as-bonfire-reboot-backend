@@ -7,11 +7,7 @@ class UserMeSerializerTests(SerializerTestCase):
     serializer_class = serializers.UserMeSerializer
 
     def test_keys(self):
-        write_fields = {
-            "email",
-            "first_name",
-            "last_name",
-        }
+        write_fields = {"email", "first_name", "last_name", "vibe_gif"}
         self.assertWriteFieldsSetEqual(write_fields)
         read_fields = write_fields.union(
             {
