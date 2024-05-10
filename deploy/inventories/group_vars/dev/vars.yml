@@ -20,7 +20,7 @@ django_env:
   DEBUG: "False"
   USE_DEBUG: "False"
   SECRET_KEY: "{{ vault_SECRET_KEY }}"
-  DEFAULT_FILE_STORAGE: ""
+  DEFAULT_FILE_STORAGE: "django_s3_storage.storage.S3Storage"
   
   # Database vars
   DB_USER: "bonfire"
@@ -38,6 +38,12 @@ django_env:
 
   # 2FA vars
   OTP_TOTP_ISSUER: "bonfire Dev"
+
+  # S3 storage
+  AWS_ACCESS_KEY_ID: "AKIA6ODU53RWWLKUX7QI"
+  AWS_SECRET_ACCESS_KEY: "{{ vault_AWS_SECRET_ACCESS_KEY }}"
+  AWS_REGION: "eu-north-1"
+  AWS_S3_BUCKET_NAME: "bonfire-dev-media"
 
   # Flex
   FLEX_API_URL: "https://flexykey.se/MobileApp.aspx/"
