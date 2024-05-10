@@ -242,6 +242,9 @@ SIMPLE_JWT = {
 # 2FA
 OTP_TOTP_ISSUER = f"bonfire {os.getenv('ENV')}"
 
+# Slack
+SLACK_TOKEN = os.getenv("SLACK_TOKEN")
+
 # Sentry
 sentry_sdk.init(
     dsn=os.getenv("SENTRY_DSN"),

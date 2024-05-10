@@ -1,5 +1,7 @@
 import factory
 
+from utils.image import generate_test_image
+
 from .. import models
 
 
@@ -20,3 +22,11 @@ class UserFactory(factory.django.DjangoModelFactory):
 
         if extracted is not None:
             obj.groups.set(extracted)
+
+
+class UserProfileImageFactory(factory.django.DjangoModelFactory):
+    user = factory.SubFactory(UserFactory)
+    original = factory.django.FileField(from_func=generate_test_image)
+
+    class Meta:
+        model = models.UserProfileImage

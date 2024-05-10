@@ -15,6 +15,8 @@ DEBUG=True
 
 DB_PASSWORD=supersecret
 SECRET_KEY=loremipsumdolorsitamet
+
+SLACK_TOKEN=
 ```
 
 ## Setting up the first admin user

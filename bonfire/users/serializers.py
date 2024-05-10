@@ -5,7 +5,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from google_client import client as google_client
 from utils.fields import LowerCaseEmailField
 
-from . import models
+from . import models, tasks
+
+
+class UserProfileImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.UserProfileImage
+        fields = ("normal", "original", "updated_at")
+        read_only_fields = ("normal", "updated_at")
+        extra_kwargs = {
+            "original": {"write_only": True},
+        }
 
 
 class UserMeSerializer(serializers.ModelSerializer):
@@ -13,6 +23,11 @@ class UserMeSerializer(serializers.ModelSerializer):
         validators=[
             UniqueValidator(queryset=models.User.objects.all(), lookup="iexact")
         ]
+    )
+    profile_image = UserProfileImageSerializer(
+        source="userprofileimage",
+        read_only=True,
+        allow_null=True,
     )
 
     class Meta:
@@ -22,6 +37,7 @@ class UserMeSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
+            "profile_image",
         )
         read_only_fields = ("id",)
 
@@ -75,4 +91,7 @@ class UserTokenObtainPairSerializer(serializers.Serializer):
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         }
+
+        tasks.sync_with_slack_user_task.si(str(user.id)).delay()
+
         return tokens

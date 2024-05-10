@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.utils.translation import gettext_lazy as _
 
+from utils.admin import GetImageNormal150PXMixin
+
 from . import models
 
 
@@ -85,3 +87,19 @@ class UserAdmin(DjangoUserAdmin):
             return False
 
         return super().has_delete_permission(request, obj)
+
+
+@admin.register(models.UserProfileImage)
+class UserProfileImageAdmin(admin.ModelAdmin, GetImageNormal150PXMixin):
+    list_display = (
+        "user",
+        "get_image",
+    )
+    fields = (
+        "user",
+        "original",
+        "normal",
+    )
+    readonly_fields = ("user",)
+
+    ordering = ("created_at",)

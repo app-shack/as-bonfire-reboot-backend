@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 from .. import models
+from . import factories
 
 
 class UserManagerTests(TestCase):
@@ -66,3 +67,14 @@ class UserTests(TestCase):
             last_name="Coldwater",
         )
         self.assertEqual(user.get_full_name(), "Quentin Coldwater")
+
+
+class UserProfileImageTests(TestCase):
+    def test_image_post_process(self):
+        with self.captureOnCommitCallbacks(execute=True):
+            image = factories.UserProfileImageFactory()
+
+        image.refresh_from_db()
+
+        self.assertTrue(image.original)
+        self.assertTrue(image.normal)

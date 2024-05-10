@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import ANY, Mock, patch
 
 from django.core.cache import cache
 from rest_framework import status
@@ -61,6 +61,62 @@ class UserTokenObtainPairTests(APITestCase):
         "sub": "116853902888273942150",
     }
 
+    SLACK_DATA = {
+        "ok": True,
+        "user": {
+            "color": "235e5b",
+            "deleted": False,
+            "id": "test",
+            "is_admin": False,
+            "is_app_user": False,
+            "is_bot": False,
+            "is_email_confirmed": True,
+            "is_owner": False,
+            "is_primary_owner": False,
+            "is_restricted": False,
+            "is_ultra_restricted": False,
+            "name": "test.test",
+            "profile": {
+                "avatar_hash": "c043fa815c6d",
+                "display_name": "TESTER",
+                "display_name_normalized": "tester",
+                "email": "test.test@appshack.se",
+                "fields": None,
+                "first_name": "test",
+                "huddle_state": "default_unset",
+                "huddle_state_expiration_ts": 0,
+                "image_1024": "https://avatars.slack-edge.com/2022-08-22/3971246883346_c043fa815c6d0b14bdee_1024.png",
+                "image_192": "https://avatars.slack-edge.com/2022-08-22/3971246883346_c043fa815c6d0b14bdee_192.png",
+                "image_24": "https://avatars.slack-edge.com/2022-08-22/3971246883346_c043fa815c6d0b14bdee_24.png",
+                "image_32": "https://avatars.slack-edge.com/2022-08-22/3971246883346_c043fa815c6d0b14bdee_32.png",
+                "image_48": "https://avatars.slack-edge.com/2022-08-22/3971246883346_c043fa815c6d0b14bdee_48.png",
+                "image_512": "https://avatars.slack-edge.com/2022-08-22/3971246883346_c043fa815c6d0b14bdee_512.png",
+                "image_72": "https://avatars.slack-edge.com/2022-08-22/3971246883346_c043fa815c6d0b14bdee_72.png",
+                "image_original": "https://avatars.slack-edge.com/2022-08-22/3971246883346_c043fa815c6d0b14bdee_original.png",  # noqa
+                "is_custom_image": True,
+                "last_name": "Tester",
+                "phone": "+706",
+                "real_name": "Test Tester",
+                "real_name_normalized": "Test Tester",
+                "skype": "",
+                "status_emoji": "",
+                "status_emoji_display_info": [],
+                "status_expiration": 0,
+                "status_text": "",
+                "status_text_canonical": "",
+                "team": "T03UWSJSK",
+                "title": "",
+            },
+            "real_name": "Test Tester",
+            "team_id": "T03UWSJSK",
+            "tz": "Europe/Amsterdam",
+            "tz_label": "Central European Summer Time",
+            "tz_offset": 7200,
+            "updated": 1715091047,
+            "who_can_share_contact_card": "EVERYONE",
+        },
+    }
+
     @classmethod
     def setUpTestData(cls):
         cls.user = factories.UserFactory(email=cls.GOOGLE_TOKEN_DATA["email"])
@@ -87,6 +143,13 @@ class UserTokenObtainPairTests(APITestCase):
         self.addCleanup(google_validate_patcher.stop)
         self.google_validate_mock = google_validate_patcher.start()
 
+        slack_email_patcher = patch(
+            "slack_sdk.WebClient.users_lookupByEmail", autospec=True
+        )
+        self.addCleanup(slack_email_patcher.stop)
+        self.slack_email_mock = slack_email_patcher.start()
+        self.slack_email_mock.return_value = Mock(data=self.SLACK_DATA)
+
     def test_create_not_existing(self):
         data = {"token": "token", "client_id": "client_id"}
 
@@ -103,6 +166,8 @@ class UserTokenObtainPairTests(APITestCase):
 
         self.assertFalse(user.has_usable_password())
 
+        self.slack_email_mock.assert_called_once_with(ANY, email=user.email)
+
     def test_create_existing(self):
         data = {"token": "token", "client_id": "client_id"}
 
@@ -118,6 +183,8 @@ class UserTokenObtainPairTests(APITestCase):
         user = models.User.objects.get(email=self.GOOGLE_TOKEN_DATA["email"])
 
         self.assertFalse(user.has_usable_password())
+
+        self.slack_email_mock.assert_called_once_with(ANY, email=user.email)
 
 
 class UserTokenRefreshTests(APITestCase):
