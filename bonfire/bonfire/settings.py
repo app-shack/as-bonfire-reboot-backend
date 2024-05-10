@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     # First party
     "bonfire.apps.OTPAdminConfig",
     "doors",
+    "massages",
     "users",
     "versions",
 ]
