@@ -1,7 +1,7 @@
 from django.conf import settings
 from slack_sdk import WebClient, errors
 
-from slack_client.responses import SearchEmailResponse
+from slack.responses import SearchEmailResponse
 
 
 class SlackClient(WebClient):

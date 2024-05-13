@@ -10,7 +10,7 @@ from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 from django.utils.translation import gettext_lazy as _
 
-from slack_client.client import SlackClient
+from slack.client import SlackClient
 from utils.image import url_to_django_image
 from utils.models import ImageResizeMixIn, TimestampedModel, UUIDModel
 
