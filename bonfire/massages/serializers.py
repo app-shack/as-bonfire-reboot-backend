@@ -70,43 +70,40 @@ class MassageQueueEntrySerializer(serializers.ModelSerializer):
 
 
 class MassageQueueEntryDowngradeSerializer(serializers.ModelSerializer):
-    NOT_LOWER_QUEUE_POSITION = "Other queue entry is not in a lower position!"
+    NOT_LOWER_QUEUE_POSITION = "Queue position out of bounds!"
 
-    other_queue_entry = serializers.PrimaryKeyRelatedField(
-        queryset=models.MassageQueueEntry.objects, write_only=True
-    )
+    queue_position = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = models.MassageQueueEntry
-        fields = ("other_queue_entry",)
+        fields = ("queue_position",)
         read_only_fields = fields
 
     def validate(self, attrs):
-        other_queue_entry = attrs["other_queue_entry"]
+        queue_position = attrs["queue_position"]
+        last_queue_entry = models.MassageQueueEntry.objects.latest("queue_position")
 
-        if self.instance.queue_position >= other_queue_entry.queue_position:
+        if queue_position > last_queue_entry.queue_position:
             raise serializers.ValidationError(self.NOT_LOWER_QUEUE_POSITION)
 
         return attrs
 
     def save(self, **kwargs):
-        other_queue_entry = self.validated_data["other_queue_entry"]
+        old_queue_position = self.instance.queue_position
+        new_queue_position = self.validated_data["queue_position"]
 
         with transaction.atomic():
-            my_old_queue_position = self.instance.queue_position
-            my_new_queue_position = other_queue_entry.queue_position
-
             models.MassageQueueEntry.objects.filter(
                 created_at__date=now().date(),
-                queue_position__gt=my_new_queue_position,
+                queue_position__gt=new_queue_position,
             ).update(queue_position=F("queue_position") + 1)
 
-            self.instance.queue_position = my_new_queue_position + 1
+            self.instance.queue_position = new_queue_position + 1
             self.instance.save()
 
             models.MassageQueueEntry.objects.filter(
                 created_at__date=now().date(),
-                queue_position__gte=my_old_queue_position,
+                queue_position__gte=old_queue_position,
             ).update(queue_position=F("queue_position") - 1)
 
 

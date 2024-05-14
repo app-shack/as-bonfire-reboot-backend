@@ -91,7 +91,7 @@ class TodaysMassageQueueEntryViewSetTests(APITestCase):
         response = self.client.patch(
             self.downgrade_url,
             data={
-                "other_queue_entry": str(self.queue_entry_2.pk),
+                "queue_position": self.queue_entry_2.queue_position,
             },
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
