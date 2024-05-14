@@ -434,13 +434,12 @@ class IncomingSlackEventWebhookViewTests(APITestCase):
         data = self.REACTION_REMOVED_WORKING_CHANNEL.copy()
 
         msg = factories.SlackMessageFactory(
-            slack_ts=self.unix_to_dt(data["event"]["item"]["ts"])
+            slack_ts=self.unix_to_dt(data["event"]["item"]["ts"]),
         )
         factories.SlackReactionFactory(
             slack_message=msg,
-            slack_ts=self.unix_to_dt(
-                data["event"]["event_ts"],
-            ),
+            slack_user=data["event"]["user"],
+            slack_reaction=data["event"]["reaction"],
         )
 
         with self.assertNumQueries(1):

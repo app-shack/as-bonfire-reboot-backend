@@ -221,5 +221,6 @@ class IncomingSlackEventWebhookSerializer(serializers.Serializer):
             ):
                 models.SlackReaction.objects.filter(
                     slack_message__slack_ts=e.event.item.ts,
-                    slack_ts=e.event.event_ts,
+                    slack_reaction=e.event.reaction,
+                    slack_user=e.event.user,
                 ).delete()
