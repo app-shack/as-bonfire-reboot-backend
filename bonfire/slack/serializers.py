@@ -16,7 +16,7 @@ def dataclass_from_kwargs(cls, **kwargs) -> BaseEvent:
 
 
 class BaseEvent:
-    def handle(self):
+    def handle(self, raw_data: dict):
         raise NotImplementedError
 
 
@@ -181,4 +181,5 @@ class IncomingSlackEventWebhookSerializer(serializers.Serializer):
 
         if event_type == "event_callback":
             e = dataclass_from_kwargs(EventCallback, **self.initial_data)
-            e.event.handle(raw_data=self.initial_data)
+            if isinstance(e.event, BaseEvent):
+                e.event.handle(raw_data=self.initial_data)
