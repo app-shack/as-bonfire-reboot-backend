@@ -133,16 +133,26 @@ class IncomingSlackEventWebhookViewTests(APITestCase):
 
     def test_create_reaction_added_working_channel(self):
         data = {
-            "type": "reaction_added",
-            "user": "U123ABC456",
-            "reaction": "thumbsup",
-            "item_user": "U222222222",
-            "item": {
-                "type": "message",
-                "channel": "C123ABC456",
-                "ts": "1360782400.498405",
+            "api_app_id": "A072FHKBNBH",
+            "authorizations": None,
+            "context_enterprise_id": None,
+            "context_team_id": "T03UWSJSK",
+            "event": {
+                "event_ts": "1715690227.003000",
+                "item": {
+                    "channel": "C123ABC456",
+                    "ts": "1715689807.952509",
+                    "type": "message",
+                },
+                "reaction": "fire",
+                "type": "reaction_added",
+                "user": "U02NZHS9TPD",
             },
-            "event_ts": "1360782804.083113",
+            "event_id": "Ev07411BRTCY",
+            "event_time": 1715690227,
+            "team_id": "T03UWSJSK",
+            "token": "[Filtered]",
+            "type": "event_callback",
         }
 
         with self.assertNumQueries(0):
@@ -156,16 +166,26 @@ class IncomingSlackEventWebhookViewTests(APITestCase):
 
     def test_create_reaction_added_other_channel(self):
         data = {
-            "type": "reaction_added",
-            "user": "U123ABC456",
-            "reaction": "thumbsup",
-            "item_user": "U222222222",
-            "item": {
-                "type": "message",
-                "channel": "other_channel",
-                "ts": "1360782400.498405",
+            "api_app_id": "A072FHKBNBH",
+            "authorizations": None,
+            "context_enterprise_id": None,
+            "context_team_id": "T03UWSJSK",
+            "event": {
+                "event_ts": "1715690227.003000",
+                "item": {
+                    "channel": "other_channel",
+                    "ts": "1715689807.952509",
+                    "type": "message",
+                },
+                "reaction": "fire",
+                "type": "reaction_added",
+                "user": "U02NZHS9TPD",
             },
-            "event_ts": "1360782804.083113",
+            "event_id": "Ev07411BRTCY",
+            "event_time": 1715690227,
+            "team_id": "T03UWSJSK",
+            "token": "[Filtered]",
+            "type": "event_callback",
         }
 
         with self.assertNumQueries(0):

@@ -76,13 +76,13 @@ class IncomingSlackEventWebhookSerializer(serializers.Serializer):
     def save(self, **kwargs):
         event_type = self.validated_data.get("type")
 
-        if event_type is None or event_type == "url_verification":
-            return
-
         if event_type == "event_callback":
             e = EventCallback.from_kwargs(**self.validated_data)
 
-            if e.event.channel == settings.SLACK_WORKING_LOCATION_CHANNEL:
+            if (
+                isinstance(e.event, ChannelMessageEvent)
+                and e.event.channel == settings.SLACK_WORKING_LOCATION_CHANNEL
+            ):
                 models.SlackMessage.objects.create(
                     slack_channel=e.event.channel,
                     slack_user=e.event.user,
