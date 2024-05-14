@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "bonfire.apps.OTPAdminConfig",
     "doors",
     "massages",
+    "slack",
     "users",
     "versions",
 ]
@@ -251,6 +252,7 @@ OTP_TOTP_ISSUER = f"bonfire {os.getenv('ENV')}"
 
 # Slack
 SLACK_TOKEN = os.getenv("SLACK_TOKEN")
+SLACK_WORKING_LOCATION_CHANNEL = os.getenv("SLACK_WORKING_LOCATION_CHANNEL")
 
 # Sentry
 sentry_sdk.init(

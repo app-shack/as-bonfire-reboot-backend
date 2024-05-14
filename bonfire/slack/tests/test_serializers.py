@@ -11,11 +11,23 @@ class IncomingSlackEventWebhookSerializerTests(SerializerTestCase):
             "token",
             "challenge",
             "type",
+            "api_app_id",
+            "event_time",
+            "event",
+            "authed_teams",
+            "event_id",
+            "team_id",
         }
         self.assertWriteFieldsSetEqual(write_fields)
         read_fields = {
             "token",
             "challenge",
             "type",
+            "api_app_id",
+            "event_time",
+            "event",
+            "authed_teams",
+            "event_id",
+            "team_id",
         }
         self.assertReadFieldsSetEqual(read_fields)

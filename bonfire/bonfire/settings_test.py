@@ -1,4 +1,5 @@
 from .settings import *  # NOQA
+from .settings import INSTALLED_APPS
 
 TEST = True
 DEBUG = False
@@ -33,3 +34,7 @@ CELERY_BACKEND = "memory"
 SILENCED_SYSTEM_CHECKS = [
     "debug_toolbar.W001",  # Debug toolbar excluded in tests
 ]
+
+
+# Slack
+SLACK_WORKING_LOCATION_CHANNEL = "C123ABC456"

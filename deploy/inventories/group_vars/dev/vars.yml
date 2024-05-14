@@ -60,3 +60,4 @@ django_env:
 
   # Slack
   SLACK_TOKEN: "{{ vault_SLACK_TOKEN }}"
+  SLACK_WORKING_LOCATION_CHANNEL: "CC25RRB42"
