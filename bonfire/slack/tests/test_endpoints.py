@@ -51,6 +51,80 @@ class IncomingSlackEventWebhookViewTests(APITestCase):
         "event_time": 1355517523,
     }
 
+    CHANNEL_MESSAGE_DELETED_WORKING_CHANNEL = {
+        "api_app_id": "A072FHKBNBH",
+        "authorizations": None,
+        "context_enterprise_id": None,
+        "context_team_id": "T03UWSJSK",
+        "event": {
+            "channel": "C123ABC456",
+            "channel_type": "channel",
+            "deleted_ts": "1715699820.013519",
+            "event_ts": "1715699842.030500",
+            "hidden": True,
+            "previous_message": {
+                "blocks": [
+                    {
+                        "block_id": "'XWaxq'",
+                        "elements": "[{'type': 'rich_text_section', 'elements': [{'type': 'text', 'text': 'bonfire!'}]}]",  # noqa
+                        "type": "'rich_text'",
+                    }
+                ],
+                "client_msg_id": "0b0e163a-9629-435e-8466-a5089f99a7c5",
+                "team": "T03UWSJSK",
+                "text": "bonfire!",
+                "ts": "1715699820.013519",
+                "type": "message",
+                "user": "U03UK3FE127",
+            },
+            "subtype": "message_deleted",
+            "ts": "1715699842.030500",
+            "type": "message",
+        },
+        "event_id": "Ev072YPBS2KH",
+        "event_time": 1715699842,
+        "team_id": "T03UWSJSK",
+        "token": "[Filtered]",
+        "type": "event_callback",
+    }
+
+    CHANNEL_MESSAGE_DELETED_OTHER_CHANNEL = {
+        "api_app_id": "A072FHKBNBH",
+        "authorizations": None,
+        "context_enterprise_id": None,
+        "context_team_id": "T03UWSJSK",
+        "event": {
+            "channel": "other_channel",
+            "channel_type": "channel",
+            "deleted_ts": "1715699820.013519",
+            "event_ts": "1715699842.030500",
+            "hidden": True,
+            "previous_message": {
+                "blocks": [
+                    {
+                        "block_id": "'XWaxq'",
+                        "elements": "[{'type': 'rich_text_section', 'elements': [{'type': 'text', 'text': 'bonfire!'}]}]",  # noqa
+                        "type": "'rich_text'",
+                    }
+                ],
+                "client_msg_id": "0b0e163a-9629-435e-8466-a5089f99a7c5",
+                "team": "T03UWSJSK",
+                "text": "bonfire!",
+                "ts": "1715699820.013519",
+                "type": "message",
+                "user": "U03UK3FE127",
+            },
+            "subtype": "message_deleted",
+            "ts": "1715699842.030500",
+            "type": "message",
+        },
+        "event_id": "Ev072YPBS2KH",
+        "event_time": 1715699842,
+        "team_id": "T03UWSJSK",
+        "token": "[Filtered]",
+        "type": "event_callback",
+    }
+
     CHANNEL_JOINED = {
         "api_app_id": "A072FHKBNBH",
         "authorizations": None,
@@ -255,7 +329,7 @@ class IncomingSlackEventWebhookViewTests(APITestCase):
             response = self.client.post(self.url, data=data, format="json")
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        self.assertEqual(response.data, self.CHANNEL_MESSAGE_WORKING_CHANNEL)
+        self.assertEqual(response.data, data)
 
         num_msg = models.SlackMessage.objects.count()
         self.assertEqual(num_msg, 1)
@@ -278,6 +352,27 @@ class IncomingSlackEventWebhookViewTests(APITestCase):
 
         num_msg = models.SlackMessage.objects.count()
         self.assertEqual(num_msg, 0)
+
+    def test_create_event_callback_channel_message_deleted_working_channel(self):
+        data = self.CHANNEL_MESSAGE_DELETED_WORKING_CHANNEL.copy()
+
+        factories.SlackMessageFactory(
+            slack_ts=self.unix_to_dt(data["event"]["deleted_ts"])
+        )
+
+        with self.assertNumQueries(3):
+            response = self.client.post(self.url, data=data, format="json")
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        num_msg = models.SlackMessage.objects.count()
+        self.assertEqual(num_msg, 0)
+
+    def test_create_event_callback_channel_message_deleted_other_channel(self):
+        data = self.CHANNEL_MESSAGE_DELETED_OTHER_CHANNEL.copy()
+
+        with self.assertNumQueries(0):
+            response = self.client.post(self.url, data=data, format="json")
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_create_event_callback_channel_join(self):
         data = self.CHANNEL_JOINED.copy()

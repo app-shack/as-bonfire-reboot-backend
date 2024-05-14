@@ -1,4 +1,5 @@
 from dataclasses import dataclass, fields
+from typing import Union
 
 from django.conf import settings
 from django.utils.timezone import datetime
@@ -41,6 +42,24 @@ class ChannelMessageEvent:
 
     def __post_init__(self):
         self.event_ts = datetime.fromtimestamp(float(self.event_ts)).astimezone(
+            settings.TZ
+        )
+
+
+@dataclass
+class ChannelMessageDeletedEvent:
+    type: str
+    channel: str
+    deleted_ts: datetime
+
+    @classmethod
+    def from_kwargs(cls, **kwargs):
+        names = set([f.name for f in fields(cls)])
+        filtered_kwargs = {k: v for k, v in kwargs.items() if k in names}
+        return cls(**filtered_kwargs)
+
+    def __post_init__(self):
+        self.deleted_ts = datetime.fromtimestamp(float(self.deleted_ts)).astimezone(
             settings.TZ
         )
 
@@ -93,14 +112,22 @@ class ChannelMessageReactionRemovedEvent:
 @dataclass
 class EventCallback:
     token: str
-    event: ChannelMessageEvent
+    event: Union[
+        ChannelMessageEvent,
+        ChannelMessageDeletedEvent,
+        ChannelMessageReactionAddedEvent,
+        ChannelMessageReactionRemovedEvent,
+    ]
     type: str
     event_id: str
     event_time: int
 
     def __post_init__(self):
         if self.event["type"] == "message":
-            self.event = ChannelMessageEvent.from_kwargs(**self.event)
+            if self.event.get("subtype") == "message_deleted":
+                self.event = ChannelMessageDeletedEvent.from_kwargs(**self.event)
+            else:
+                self.event = ChannelMessageEvent.from_kwargs(**self.event)
         elif self.event["type"] == "reaction_added":
             self.event = ChannelMessageReactionAddedEvent.from_kwargs(**self.event)
         elif self.event["type"] == "reaction_removed":
@@ -162,6 +189,12 @@ class IncomingSlackEventWebhookSerializer(serializers.Serializer):
                     external_id=e.event_id,
                     raw_data=self.data,
                 )
+
+            if (
+                isinstance(e.event, ChannelMessageDeletedEvent)
+                and e.event.channel == settings.SLACK_WORKING_LOCATION_CHANNEL
+            ):
+                models.SlackMessage.objects.filter(slack_ts=e.event.deleted_ts).delete()
 
             if (
                 isinstance(e.event, ChannelMessageReactionAddedEvent)
