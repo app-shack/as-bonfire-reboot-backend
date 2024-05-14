@@ -9,6 +9,10 @@ from rest_framework import serializers
 from . import models
 
 
+def unix_to_datetime(unix) -> datetime:
+    return datetime.fromtimestamp(float(unix)).astimezone(settings.TZ)
+
+
 def dataclass_from_kwargs(cls, **kwargs) -> BaseEvent:
     names = set([f.name for f in fields(cls)])
     filtered_kwargs = {k: v for k, v in kwargs.items() if k in names}
@@ -27,7 +31,7 @@ class ChannelEventItem:
     type: str
 
     def __post_init__(self):
-        self.ts = datetime.fromtimestamp(float(self.ts)).astimezone(settings.TZ)
+        self.ts = unix_to_datetime(self.ts)
 
 
 @dataclass
@@ -41,9 +45,7 @@ class ChannelMessageEvent(BaseEvent):
     channel_type: str
 
     def __post_init__(self):
-        self.event_ts = datetime.fromtimestamp(float(self.event_ts)).astimezone(
-            settings.TZ
-        )
+        self.event_ts = unix_to_datetime(self.event_ts)
 
     def handle(self, raw_data: dict):
         if self.channel == settings.SLACK_WORKING_LOCATION_CHANNEL:
@@ -63,9 +65,7 @@ class ChannelMessageDeletedEvent(BaseEvent):
     deleted_ts: datetime
 
     def __post_init__(self):
-        self.deleted_ts = datetime.fromtimestamp(float(self.deleted_ts)).astimezone(
-            settings.TZ
-        )
+        self.deleted_ts = unix_to_datetime(self.deleted_ts)
 
     def handle(self, raw_data: dict):
         if self.channel == settings.SLACK_WORKING_LOCATION_CHANNEL:
@@ -81,9 +81,8 @@ class ChannelMessageReactionAddedEvent(BaseEvent):
     user: str
 
     def __post_init__(self):
-        self.event_ts = datetime.fromtimestamp(float(self.event_ts)).astimezone(
-            settings.TZ
-        )
+        self.event_ts = unix_to_datetime(self.event_ts)
+
         if self.item["type"] == "message":
             self.item = dataclass_from_kwargs(ChannelEventItem, **self.item)
 
@@ -112,9 +111,7 @@ class ChannelMessageReactionRemovedEvent(BaseEvent):
     user: str
 
     def __post_init__(self):
-        self.event_ts = datetime.fromtimestamp(float(self.event_ts)).astimezone(
-            settings.TZ
-        )
+        self.event_ts = unix_to_datetime(self.event_ts)
 
         if self.item["type"] == "message":
             self.item = dataclass_from_kwargs(ChannelEventItem, **self.item)
