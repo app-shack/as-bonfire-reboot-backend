@@ -9,8 +9,6 @@ class SlackMessage(UUIDModel, TimestampedModel):
     slack_ts = models.DateTimeField()
     message = models.TextField()
 
-    external_id = models.CharField(unique=True, max_length=255)
-
     raw_data = models.JSONField(default=dict, blank=True)
 
 

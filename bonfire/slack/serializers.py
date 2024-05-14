@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from dataclasses import dataclass, fields
-from typing import Union
 
 from django.conf import settings
 from django.utils.timezone import datetime
@@ -8,24 +9,29 @@ from rest_framework import serializers
 from . import models
 
 
+def dataclass_from_kwargs(cls, **kwargs) -> BaseEvent:
+    names = set([f.name for f in fields(cls)])
+    filtered_kwargs = {k: v for k, v in kwargs.items() if k in names}
+    return cls(**filtered_kwargs)
+
+
+class BaseEvent:
+    def handle(self):
+        raise NotImplementedError
+
+
 @dataclass
 class ChannelEventItem:
     channel: str
     ts: str
     type: str
 
-    @classmethod
-    def from_kwargs(cls, **kwargs):
-        names = set([f.name for f in fields(cls)])
-        filtered_kwargs = {k: v for k, v in kwargs.items() if k in names}
-        return cls(**filtered_kwargs)
-
     def __post_init__(self):
         self.ts = datetime.fromtimestamp(float(self.ts)).astimezone(settings.TZ)
 
 
 @dataclass
-class ChannelMessageEvent:
+class ChannelMessageEvent(BaseEvent):
     type: str
     channel: str
     user: str
@@ -34,113 +40,119 @@ class ChannelMessageEvent:
     event_ts: datetime
     channel_type: str
 
-    @classmethod
-    def from_kwargs(cls, **kwargs):
-        names = set([f.name for f in fields(cls)])
-        filtered_kwargs = {k: v for k, v in kwargs.items() if k in names}
-        return cls(**filtered_kwargs)
-
     def __post_init__(self):
         self.event_ts = datetime.fromtimestamp(float(self.event_ts)).astimezone(
             settings.TZ
         )
 
+    def handle(self, raw_data: dict):
+        if self.channel == settings.SLACK_WORKING_LOCATION_CHANNEL:
+            models.SlackMessage.objects.create(
+                slack_channel=self.channel,
+                slack_user=self.user,
+                slack_ts=self.event_ts,
+                message=self.text,
+                raw_data=raw_data,
+            )
+
 
 @dataclass
-class ChannelMessageDeletedEvent:
+class ChannelMessageDeletedEvent(BaseEvent):
     type: str
     channel: str
     deleted_ts: datetime
-
-    @classmethod
-    def from_kwargs(cls, **kwargs):
-        names = set([f.name for f in fields(cls)])
-        filtered_kwargs = {k: v for k, v in kwargs.items() if k in names}
-        return cls(**filtered_kwargs)
 
     def __post_init__(self):
         self.deleted_ts = datetime.fromtimestamp(float(self.deleted_ts)).astimezone(
             settings.TZ
         )
 
+    def handle(self, raw_data: dict):
+        if self.channel == settings.SLACK_WORKING_LOCATION_CHANNEL:
+            models.SlackMessage.objects.filter(slack_ts=self.deleted_ts).delete()
+
 
 @dataclass
-class ChannelMessageReactionAddedEvent:
+class ChannelMessageReactionAddedEvent(BaseEvent):
     event_ts: datetime
     item: ChannelEventItem
     reaction: str
     type: str
     user: str
 
-    @classmethod
-    def from_kwargs(cls, **kwargs):
-        names = set([f.name for f in fields(cls)])
-        filtered_kwargs = {k: v for k, v in kwargs.items() if k in names}
-        return cls(**filtered_kwargs)
-
     def __post_init__(self):
         self.event_ts = datetime.fromtimestamp(float(self.event_ts)).astimezone(
             settings.TZ
         )
         if self.item["type"] == "message":
-            self.item = ChannelEventItem.from_kwargs(**self.item)
+            self.item = dataclass_from_kwargs(ChannelEventItem, **self.item)
+
+    def handle(self, raw_data: dict):
+        if self.item.channel == settings.SLACK_WORKING_LOCATION_CHANNEL:
+            try:
+                slack_message = models.SlackMessage.objects.get(slack_ts=self.item.ts)
+            except models.SlackMessage.DoesNotExist:
+                pass
+            else:
+                models.SlackReaction.objects.create(
+                    slack_message=slack_message,
+                    slack_reaction=self.reaction,
+                    slack_user=self.user,
+                    slack_ts=self.event_ts,
+                    raw_data=raw_data,
+                )
 
 
 @dataclass
-class ChannelMessageReactionRemovedEvent:
+class ChannelMessageReactionRemovedEvent(BaseEvent):
     event_ts: datetime
     item: ChannelEventItem
     reaction: str
     type: str
     user: str
 
-    @classmethod
-    def from_kwargs(cls, **kwargs):
-        names = set([f.name for f in fields(cls)])
-        filtered_kwargs = {k: v for k, v in kwargs.items() if k in names}
-        return cls(**filtered_kwargs)
-
     def __post_init__(self):
         self.event_ts = datetime.fromtimestamp(float(self.event_ts)).astimezone(
             settings.TZ
         )
 
         if self.item["type"] == "message":
-            self.item = ChannelEventItem.from_kwargs(**self.item)
+            self.item = dataclass_from_kwargs(ChannelEventItem, **self.item)
+
+    def handle(self, raw_data: dict):
+        if self.item.channel == settings.SLACK_WORKING_LOCATION_CHANNEL:
+            models.SlackReaction.objects.filter(
+                slack_message__slack_ts=self.item.ts,
+                slack_reaction=self.reaction,
+                slack_user=self.user,
+            ).delete()
 
 
 @dataclass
 class EventCallback:
-    token: str
-    event: Union[
-        ChannelMessageEvent,
-        ChannelMessageDeletedEvent,
-        ChannelMessageReactionAddedEvent,
-        ChannelMessageReactionRemovedEvent,
-    ]
     type: str
-    event_id: str
-    event_time: int
+    event: BaseEvent
 
     def __post_init__(self):
         if self.event["type"] == "message":
             if self.event.get("subtype") == "message_deleted":
-                self.event = ChannelMessageDeletedEvent.from_kwargs(**self.event)
+                self.event = dataclass_from_kwargs(
+                    ChannelMessageDeletedEvent, **self.event
+                )
             else:
-                self.event = ChannelMessageEvent.from_kwargs(**self.event)
+                self.event = dataclass_from_kwargs(ChannelMessageEvent, **self.event)
+
         elif self.event["type"] == "reaction_added":
-            self.event = ChannelMessageReactionAddedEvent.from_kwargs(**self.event)
+            self.event = dataclass_from_kwargs(
+                ChannelMessageReactionAddedEvent, **self.event
+            )
+
         elif self.event["type"] == "reaction_removed":
-            self.event = ChannelMessageReactionRemovedEvent.from_kwargs(**self.event)
-
-    @classmethod
-    def from_kwargs(cls, **kwargs):
-        names = set([f.name for f in fields(cls)])
-        filtered_kwargs = {k: v for k, v in kwargs.items() if k in names}
-        return cls(**filtered_kwargs)
+            self.event = dataclass_from_kwargs(
+                ChannelMessageReactionRemovedEvent, **self.event
+            )
 
 
-# TODO: One serializer per msg type instead?
 class IncomingSlackEventWebhookSerializer(serializers.Serializer):
     token = serializers.CharField(required=False)
     challenge = serializers.CharField(required=False)
@@ -153,13 +165,6 @@ class IncomingSlackEventWebhookSerializer(serializers.Serializer):
             "user_profile_changed",
         )
     )
-
-    team_id = serializers.CharField(required=False)
-    api_app_id = serializers.CharField(required=False)
-    event = serializers.DictField(required=False)
-    authed_teams = serializers.ListField(child=serializers.CharField(), required=False)
-    event_id = serializers.CharField(required=False)
-    event_time = serializers.IntegerField(required=False)
 
     def validate(self, attrs):
         event_type = attrs["type"]
@@ -175,52 +180,5 @@ class IncomingSlackEventWebhookSerializer(serializers.Serializer):
         event_type = self.validated_data.get("type")
 
         if event_type == "event_callback":
-            e = EventCallback.from_kwargs(**self.validated_data)
-
-            if (
-                isinstance(e.event, ChannelMessageEvent)
-                and e.event.channel == settings.SLACK_WORKING_LOCATION_CHANNEL
-            ):
-                models.SlackMessage.objects.create(
-                    slack_channel=e.event.channel,
-                    slack_user=e.event.user,
-                    slack_ts=e.event.event_ts,
-                    message=e.event.text,
-                    external_id=e.event_id,
-                    raw_data=self.data,
-                )
-
-            if (
-                isinstance(e.event, ChannelMessageDeletedEvent)
-                and e.event.channel == settings.SLACK_WORKING_LOCATION_CHANNEL
-            ):
-                models.SlackMessage.objects.filter(slack_ts=e.event.deleted_ts).delete()
-
-            if (
-                isinstance(e.event, ChannelMessageReactionAddedEvent)
-                and e.event.item.channel == settings.SLACK_WORKING_LOCATION_CHANNEL
-            ):
-                try:
-                    slack_message = models.SlackMessage.objects.get(
-                        slack_ts=e.event.item.ts
-                    )
-                except models.SlackMessage.DoesNotExist:
-                    pass
-                else:
-                    models.SlackReaction.objects.create(
-                        slack_message=slack_message,
-                        slack_reaction=e.event.reaction,
-                        slack_user=e.event.user,
-                        slack_ts=e.event.event_ts,
-                        raw_data=self.data,
-                    )
-
-            if (
-                isinstance(e.event, ChannelMessageReactionRemovedEvent)
-                and e.event.item.channel == settings.SLACK_WORKING_LOCATION_CHANNEL
-            ):
-                models.SlackReaction.objects.filter(
-                    slack_message__slack_ts=e.event.item.ts,
-                    slack_reaction=e.event.reaction,
-                    slack_user=e.event.user,
-                ).delete()
+            e = dataclass_from_kwargs(EventCallback, **self.initial_data)
+            e.event.handle(raw_data=self.initial_data)

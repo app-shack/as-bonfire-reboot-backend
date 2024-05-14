@@ -329,8 +329,6 @@ class IncomingSlackEventWebhookViewTests(APITestCase):
             response = self.client.post(self.url, data=data, format="json")
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        self.assertEqual(response.data, data)
-
         num_msg = models.SlackMessage.objects.count()
         self.assertEqual(num_msg, 1)
 
@@ -338,7 +336,6 @@ class IncomingSlackEventWebhookViewTests(APITestCase):
         self.assertEqual(msg.slack_channel, data["event"]["channel"])
         self.assertEqual(msg.slack_user, data["event"]["user"])
         self.assertEqual(msg.message, data["event"]["text"])
-        self.assertEqual(msg.external_id, data["event_id"])
         self.assertDictEqual(msg.raw_data, data)
 
     def test_create_event_callback_channel_message_other_channel(self):
@@ -347,8 +344,6 @@ class IncomingSlackEventWebhookViewTests(APITestCase):
         with self.assertNumQueries(0):
             response = self.client.post(self.url, data=data, format="json")
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
-        self.assertEqual(response.data, data)
 
         num_msg = models.SlackMessage.objects.count()
         self.assertEqual(num_msg, 0)

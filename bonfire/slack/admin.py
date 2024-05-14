@@ -12,7 +12,6 @@ class SlackMessageAdmin(admin.ModelAdmin):
         "slack_user",
         "slack_ts",
         "message",
-        "external_id",
         "raw_data",
     )
 
