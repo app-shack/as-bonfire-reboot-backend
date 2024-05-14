@@ -17,6 +17,7 @@ from datetime import timedelta
 
 import sentry_sdk
 from firebase_admin import initialize_app
+from pytz import timezone
 from sentry_sdk.integrations.django import DjangoIntegration
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -139,6 +140,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "UTC"
+TZ = timezone("Europe/Stockholm")
 
 USE_I18N = True
 
