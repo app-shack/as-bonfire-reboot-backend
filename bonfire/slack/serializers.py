@@ -26,11 +26,8 @@ class ChannelMessageEvent:
 @dataclass
 class EventCallback:
     token: str
-    team_id: str
-    api_app_id: str
     event: ChannelMessageEvent
     type: str
-    authed_teams: list[str]
     event_id: str
     event_time: int
 

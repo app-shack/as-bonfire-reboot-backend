@@ -98,6 +98,39 @@ class IncomingSlackEventWebhookViewTests(APITestCase):
         num_msg = models.SlackMessage.objects.count()
         self.assertEqual(num_msg, 0)
 
+    def test_create_event_callback_channel_join(self):
+        data = {
+            "api_app_id": "A072FHKBNBH",
+            "authorizations": None,
+            "context_enterprise_id": None,
+            "context_team_id": "T03UWSJSK",
+            "event": {
+                "channel": "C06LVSLSXDL",
+                "channel_type": "channel",
+                "event_ts": "1715689807.952509",
+                "inviter": "U03UK3FE127",
+                "subtype": "channel_join",
+                "text": "<@U072W1J7P99> has joined the channel",
+                "ts": "1715689807.952509",
+                "type": "message",
+                "user": "U072W1J7P99",
+            },
+            "event_id": "Ev073C6DMUDQ",
+            "event_time": 1715689807,
+            "team_id": "T03UWSJSK",
+            "token": "[Filtered]",
+            "type": "event_callback",
+        }
+
+        with self.assertNumQueries(0):
+            response = self.client.post(self.url, data=data, format="json")
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # self.assertEqual(response.data, data)
+
+        num_msg = models.SlackMessage.objects.count()
+        self.assertEqual(num_msg, 0)
+
     def test_create_reaction_added_working_channel(self):
         data = {
             "type": "reaction_added",
