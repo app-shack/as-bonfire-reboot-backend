@@ -51,6 +51,114 @@ class IncomingSlackEventWebhookViewTests(APITestCase):
         "event_time": 1355517523,
     }
 
+    CHANNEL_MESSAGE_CHANGED_WORKING_CHANNEL = {
+        "api_app_id": "A072FHKBNBH",
+        "authorizations": None,
+        "context_enterprise_id": None,
+        "context_team_id": "T03UWSJSK",
+        "event": {
+            "channel": "C123ABC456",
+            "channel_type": "channel",
+            "event_ts": "1715758508.034900",
+            "hidden": True,
+            "message": {
+                "blocks": [
+                    {
+                        "block_id": "'SAqU/'",
+                        "elements": "[{'type': 'rich_text_section', 'elements': [{'type': 'text', 'text': 'WFH (OOO @ 11)'}]}]",  # noqa
+                        "type": "'rich_text'",
+                    }
+                ],
+                "client_msg_id": "5cce6c9e-6385-4abc-a98c-38ad536a2ec1",
+                "edited": {"ts": "1715758508.000000", "user": "U05TR1B8N74"},
+                "source_team": "T03UWSJSK",
+                "team": "T03UWSJSK",
+                "text": "WFH (OOO @ 11)",
+                "ts": "1715757464.051429",
+                "type": "message",
+                "user": "U05TR1B8N74",
+                "user_team": "T03UWSJSK",
+            },
+            "previous_message": {
+                "blocks": [
+                    {
+                        "block_id": "'CTzww'",
+                        "elements": "[{'type': 'rich_text_section', 'elements': [{'type': 'text', 'text': 'WFH'}]}]",  # noqa
+                        "type": "'rich_text'",
+                    }
+                ],
+                "client_msg_id": "5cce6c9e-6385-4abc-a98c-38ad536a2ec1",
+                "team": "T03UWSJSK",
+                "text": "WFH",
+                "ts": "1715757464.051429",
+                "type": "message",
+                "user": "U05TR1B8N74",
+            },
+            "subtype": "message_changed",
+            "ts": "1715758508.034900",
+            "type": "message",
+        },
+        "event_id": "Ev073AP37MSS",
+        "event_time": 1715758508,
+        "team_id": "T03UWSJSK",
+        "token": "[Filtered]",
+        "type": "event_callback",
+    }
+
+    CHANNEL_MESSAGE_CHANGED_OTHER_CHANNEL = {
+        "api_app_id": "A072FHKBNBH",
+        "authorizations": None,
+        "context_enterprise_id": None,
+        "context_team_id": "T03UWSJSK",
+        "event": {
+            "channel": "other_channel",
+            "channel_type": "channel",
+            "event_ts": "1715758508.034900",
+            "hidden": True,
+            "message": {
+                "blocks": [
+                    {
+                        "block_id": "'SAqU/'",
+                        "elements": "[{'type': 'rich_text_section', 'elements': [{'type': 'text', 'text': 'WFH (OOO @ 11)'}]}]",  # noqa
+                        "type": "'rich_text'",
+                    }
+                ],
+                "client_msg_id": "5cce6c9e-6385-4abc-a98c-38ad536a2ec1",
+                "edited": {"ts": "1715758508.000000", "user": "U05TR1B8N74"},
+                "source_team": "T03UWSJSK",
+                "team": "T03UWSJSK",
+                "text": "WFH (OOO @ 11)",
+                "ts": "1715757464.051429",
+                "type": "message",
+                "user": "U05TR1B8N74",
+                "user_team": "T03UWSJSK",
+            },
+            "previous_message": {
+                "blocks": [
+                    {
+                        "block_id": "'CTzww'",
+                        "elements": "[{'type': 'rich_text_section', 'elements': [{'type': 'text', 'text': 'WFH'}]}]",  # noqa
+                        "type": "'rich_text'",
+                    }
+                ],
+                "client_msg_id": "5cce6c9e-6385-4abc-a98c-38ad536a2ec1",
+                "team": "T03UWSJSK",
+                "text": "WFH",
+                "ts": "1715757464.051429",
+                "type": "message",
+                "user": "U05TR1B8N74",
+            },
+            "subtype": "message_changed",
+            "ts": "1715758508.034900",
+            "type": "message",
+        },
+        "event_id": "Ev073AP37MSS",
+        "event_time": 1715758508,
+        "team_id": "T03UWSJSK",
+        "token": "[Filtered]",
+        "type": "event_callback",
+    }
+
     CHANNEL_MESSAGE_DELETED_WORKING_CHANNEL = {
         "api_app_id": "A072FHKBNBH",
         "authorizations": None,
@@ -347,6 +455,35 @@ class IncomingSlackEventWebhookViewTests(APITestCase):
 
         num_msg = models.SlackMessage.objects.count()
         self.assertEqual(num_msg, 0)
+
+    def test_create_event_callback_channel_message_changed_working_channel(self):
+        data = self.CHANNEL_MESSAGE_CHANGED_WORKING_CHANNEL.copy()
+
+        msg = factories.SlackMessageFactory(
+            slack_ts=self.unix_to_dt(data["event"]["ts"]), message="test"
+        )
+
+        with self.assertNumQueries(1):
+            response = self.client.post(self.url, data=data, format="json")
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        num_msg = models.SlackMessage.objects.count()
+        self.assertEqual(num_msg, 1)
+
+        msg.refresh_from_db()
+        self.assertEqual(msg.message, data["event"]["message"]["text"])
+
+    def test_create_event_callback_channel_message_changed_other_channel(self):
+        data = self.CHANNEL_MESSAGE_CHANGED_OTHER_CHANNEL.copy()
+
+        factories.SlackMessageFactory(slack_ts=self.unix_to_dt(data["event"]["ts"]))
+
+        with self.assertNumQueries(0):
+            response = self.client.post(self.url, data=data, format="json")
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        num_msg = models.SlackMessage.objects.count()
+        self.assertEqual(num_msg, 1)
 
     def test_create_event_callback_channel_message_deleted_working_channel(self):
         data = self.CHANNEL_MESSAGE_DELETED_WORKING_CHANNEL.copy()

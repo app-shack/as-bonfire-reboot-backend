@@ -35,6 +35,16 @@ class ChannelEventItem:
 
 
 @dataclass
+class ChannelMessage:
+    type: str
+    text: str
+    ts: str
+
+    def __post_init__(self):
+        self.ts = unix_to_datetime(self.ts)
+
+
+@dataclass
 class ChannelMessageEvent(BaseEvent):
     type: str
     channel: str
@@ -55,6 +65,26 @@ class ChannelMessageEvent(BaseEvent):
                 slack_ts=self.event_ts,
                 message=self.text,
                 raw_data=raw_data,
+            )
+
+
+@dataclass
+class ChannelMessageChangedEvent(BaseEvent):
+    type: str
+    channel: str
+    ts: datetime
+    message: ChannelMessage
+
+    def __post_init__(self):
+        self.ts = unix_to_datetime(self.ts)
+
+        if self.message["type"] == "message":
+            self.message = dataclass_from_kwargs(ChannelMessage, **self.message)
+
+    def handle(self, raw_data: dict):
+        if self.channel == settings.SLACK_WORKING_LOCATION_CHANNEL:
+            models.SlackMessage.objects.filter(slack_ts=self.ts).update(
+                message=self.message.text
             )
 
 
@@ -132,9 +162,15 @@ class EventCallback:
 
     def __post_init__(self):
         if self.event["type"] == "message":
-            if self.event.get("subtype") == "message_deleted":
+            subtype = self.event.get("subtype")
+
+            if subtype == "message_deleted":
                 self.event = dataclass_from_kwargs(
                     ChannelMessageDeletedEvent, **self.event
+                )
+            elif subtype == "message_changed":
+                self.event = dataclass_from_kwargs(
+                    ChannelMessageChangedEvent, **self.event
                 )
             else:
                 self.event = dataclass_from_kwargs(ChannelMessageEvent, **self.event)
