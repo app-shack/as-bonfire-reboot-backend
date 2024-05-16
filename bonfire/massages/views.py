@@ -1,3 +1,5 @@
+from django.db import transaction
+from django.db.models import F
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from drf_spectacular.utils import extend_schema
@@ -41,6 +43,15 @@ class TodaysMassageQueueEntryViewSet(
 
     def get_object(self):
         return get_object_or_404(self.get_queryset(), user=self.request.user)
+
+    def perform_destroy(self, instance):
+        with transaction.atomic():
+            instance.delete()
+
+            models.MassageQueueEntry.objects.filter(
+                created_at__date=instance.created_at.date(),
+                queue_position__gt=instance.queue_position,
+            ).update(queue_position=F("queue_position") - 1)
 
     @extend_schema(responses={status.HTTP_204_NO_CONTENT: None})
     @action(detail=True, methods=["patch"], url_path="downgrade")
