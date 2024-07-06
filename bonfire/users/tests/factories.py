@@ -11,6 +11,8 @@ class UserFactory(factory.django.DjangoModelFactory):
     last_name = factory.Faker("last_name")
     password = factory.PostGenerationMethodCall("set_password", "test1234")
 
+    slack_id = factory.Sequence(lambda n: "slack_id_%03d" % n)
+
     class Meta:
         model = models.User
         django_get_or_create = ("email",)

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
     "rest_framework",
     # Third party
     "corsheaders",
@@ -66,6 +67,7 @@ INSTALLED_APPS = [
     "bonfire.apps.OTPAdminConfig",
     "doors",
     "massages",
+    "office_hypes",
     "slack",
     "users",
     "versions",

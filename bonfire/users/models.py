@@ -49,11 +49,16 @@ class UserManager(BaseUserManager):
     def get_by_natural_key(self, email):
         return self.get(**{self.model.USERNAME_FIELD: email.lower()})
 
+    def active_slack_users(self):
+        return self.filter(is_active=True, slack_id__isnull=False)
+
 
 class User(UUIDModel, TimestampedModel, AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=255, blank=True)
     last_name = models.CharField(max_length=255, blank=True)
+
+    slack_id = models.CharField(blank=True, null=True, unique=True)
 
     is_staff = models.BooleanField(
         default=False,
@@ -99,6 +104,7 @@ class User(UUIDModel, TimestampedModel, AbstractBaseUser, PermissionsMixin):
         c = SlackClient()
         r = c.search_email(self.email)
 
+        self.slack_id = r.user.id
         self.first_name = r.user.profile.first_name
         self.last_name = r.user.profile.last_name
         self.save()
