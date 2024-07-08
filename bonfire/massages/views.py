@@ -37,7 +37,6 @@ class TodaysMassageQueueEntryViewSet(
                 "user", "user__userprofileimage"
             )
             .filter(created_at__date=now().date())
-            .exclude(status=models.MassageQueueEntry.QueueEntryStatus.DONE)
             .order_by("queue_position")
         )
 

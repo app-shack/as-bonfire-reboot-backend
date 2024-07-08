@@ -69,19 +69,6 @@ class TodaysMassageQueueEntryViewSetTests(APITestCase):
         self.assertEqual(response.data[2]["id"], str(self.queue_entry_2.pk))
         self.assertEqual(response.data[3]["id"], str(self.queue_entry_4.pk))
 
-    def test_list_with_done_status(self):
-        self.queue_entry_1.status = models.MassageQueueEntry.QueueEntryStatus.DONE
-        self.queue_entry_1.save()
-
-        with self.assertNumQueries(1):
-            response = self.client.get(self.list_url)
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(response.data[0]["id"], str(self.queue_entry_3.pk))
-        self.assertEqual(response.data[1]["id"], str(self.queue_entry_2.pk))
-        self.assertEqual(response.data[2]["id"], str(self.queue_entry_4.pk))
-
     def test_create(self):
         self.queue_entry_2.delete()
 
