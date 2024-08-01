@@ -64,8 +64,10 @@ class LastWeeksOfficeHypeView(generics.ListAPIView):
 
     def _get_queryset(self):
         today = now()
-        dates = [(today - timedelta(days=i)).date() for i in range(1, 7)]
-        r = [
+        dates = [(today - timedelta(days=i)).date() for i in range(1, 8)]
+        dates = filter(lambda d: (d.weekday() < 5), dates)
+
+        return [
             {
                 "date": date,
                 "hype": [
@@ -75,5 +77,3 @@ class LastWeeksOfficeHypeView(generics.ListAPIView):
             }
             for date in dates
         ]
-
-        return r
