@@ -37,6 +37,7 @@ urlpatterns = [
     path("", include(router.urls)),
     path("admin/", admin.site.urls),
     path("doors/", include("doors.urls", namespace="doors")),
+    path("leaderboards/", include("leaderboards.urls", namespace="leaderboards")),
     path("massages/", include("massages.urls", namespace="massages")),
     path("office_hypes/", include("office_hypes.urls", namespace="office_hypes")),
     path(
