@@ -5,11 +5,15 @@ from . import models
 
 @admin.register(models.Leaderboard)
 class LeaderboardAdmin(admin.ModelAdmin):
-    list_display = ("name",)
+    list_display = (
+        "name",
+        "owner",
+    )
     fields = (
         "created_at",
         "updated_at",
         "name",
+        "owner",
     )
     readonly_fields = (
         "created_at",
