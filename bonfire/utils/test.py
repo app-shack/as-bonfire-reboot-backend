@@ -95,3 +95,6 @@ class PermissionTestCase(TestCase):
 
     def perm_call(self, *args, **kwargs):
         return self.permission_class().has_permission(*args, **kwargs)
+
+    def perm_obj_call(self, *args, **kwargs):
+        return self.permission_class().has_object_permission(*args, **kwargs)
