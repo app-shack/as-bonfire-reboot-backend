@@ -48,6 +48,8 @@ class DoorUnlockView(DoorMixIn, generics.UpdateAPIView):
         door = self.get_object()
         door.unlock()
 
+        models.DoorLog.objects.create_from_door(door, request.user)
+
         return Response({}, status=status.HTTP_200_OK)
 
 
@@ -63,5 +65,7 @@ class DoorLockView(DoorMixIn, generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         door = self.get_object()
         door.lock()
+
+        models.DoorLog.objects.create_from_door(door, request.user)
 
         return Response({}, status=status.HTTP_200_OK)
