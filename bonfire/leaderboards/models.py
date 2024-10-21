@@ -89,6 +89,7 @@ class LeaderboardMatch(UUIDModel, TimestampedModel):
             player_a.ties += 1
             player_b.ties += 1
 
+        # https://en.wikipedia.org/wiki/Elo_rating_system#Mathematical_details
         elo_a = 1 / (1 + math.pow(10, (player_b.rating - player_a.rating) / 400))
         elo_b = 1 / (1 + math.pow(10, (player_a.rating - player_b.rating) / 400))
 
