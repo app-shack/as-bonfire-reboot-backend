@@ -47,17 +47,17 @@ class LeaderboardMember(UUIDModel, TimestampedModel):
 
 
 class LeaderboardMatch(UUIDModel, TimestampedModel):
+    class MatchResult(models.TextChoices):
+        TIE = "tie", _("Tie")
+        PLAYER_A_WIN = "player_a_win", _("Player A Win")
+        PLAYER_B_WIN = "player_b_win", _("Player B Win")
+
     player_a = models.ForeignKey(
         LeaderboardMember, on_delete=models.CASCADE, related_name="player_as"
     )
     player_b = models.ForeignKey(
         LeaderboardMember, on_delete=models.CASCADE, related_name="player_bs"
     )
-
-    class MatchResult(models.TextChoices):
-        TIE = "tie", _("Tie")
-        PLAYER_A_WIN = "player_a_win", _("Player A Win")
-        PLAYER_B_WIN = "player_b_win", _("Player B Win")
 
     result = models.CharField(
         max_length=255,
