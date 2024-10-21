@@ -6,7 +6,10 @@ from . import models, permissions, serializers
 
 class LeaderboardView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = serializers.LeaderboardSerializer
-    permission_classes = (permissions.IsOwnerOrReadOnly,)
+    permission_classes = (
+        permissions.IsOwnerOrReadOnly,
+        IsAuthenticated,
+    )
     http_method_names = [
         "delete",
         "get",
@@ -38,7 +41,10 @@ class LeaderboardMemberCreateView(generics.CreateAPIView):
 
 
 class LeaderboardMemberView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = (permissions.IsMemberUserOrReadOnly,)
+    permission_classes = (
+        permissions.IsMemberUserOrReadOnly,
+        IsAuthenticated,
+    )
     serializer_class = serializers.LeaderboardMemberSerializer
     queryset = models.LeaderboardMember.objects.all()
 
@@ -61,7 +67,10 @@ class LeaderboardMemberListView(generics.ListAPIView):
 
 class LeaderboardCreateMatchView(generics.CreateAPIView):
     serializer_class = serializers.LeaderboardMatchCreateSerializer
-    permission_classes = (permissions.IsMatchWinnerOrReadOnly,)
+    permission_classes = (
+        permissions.IsMatchWinnerOrReadOnly,
+        IsAuthenticated,
+    )
     http_method_names = ["post"]
 
     def perform_create(self, serializer):
