@@ -13,7 +13,6 @@ class Leaderboard(UUIDModel, TimestampedModel):
         User, on_delete=models.CASCADE, related_name="leaderboards"
     )
     name = models.CharField(max_length=50)
-    objects = models.Manager()
 
     def __str__(self):
         return f"{self.name} ({self.id})"
@@ -33,7 +32,6 @@ class LeaderboardMember(UUIDModel, TimestampedModel):
     wins = models.PositiveIntegerField(default=0)
     losses = models.PositiveIntegerField(default=0)
     ties = models.PositiveIntegerField(default=0)
-    objects = models.Manager()
 
     def __str__(self):
         return f"{self.nickname} ({self.user})"
@@ -66,8 +64,6 @@ class LeaderboardMatch(UUIDModel, TimestampedModel):
         max_length=255,
         choices=MatchResult.choices,
     )
-
-    objects = models.Manager()
 
     def update_elo(self):
         member_count = self.player_a.leaderboard.members.count()
