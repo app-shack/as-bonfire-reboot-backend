@@ -73,13 +73,14 @@ class LeaderboardViewTests(APITestCase):
 
 class LeaderboardMemberViewTests(APITestCase):
     def setUp(self):
+        self.user = factories.UserFactory()
         self.leaderboard = factories.LeaderboardFactory()
         self.members = factories.LeaderboardMemberFactory.create_batch(
             5, leaderboard=self.leaderboard
         )
         self.member = self.members[0]
         self.members_other = factories.LeaderboardMemberFactory.create_batch(3)
-        self.client.force_authenticate(user=self.member.user)
+        self.client.force_authenticate(user=self.user)
         self.url = reverse(
             "leaderboards:leaderboard-member", kwargs={"pk": self.member.id}
         )
@@ -102,7 +103,7 @@ class LeaderboardMemberViewTests(APITestCase):
         response = self.client.post(self.create_url, data=data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["leaderboard"], data["leaderboard"])
-        self.assertEqual(response.data["user"], self.member.user.id)
+        self.assertEqual(response.data["user"], self.user.id)
         self.assertEqual(response.data["nickname"], data["nickname"])
         self.assertEqual(response.data["rating"], 1000.0)
         self.assertEqual(response.data["ties"], 0)
@@ -126,27 +127,24 @@ class LeaderboardMemberViewTests(APITestCase):
         self.assertEqual(response.data["losses"], self.member.losses)
 
     def test_update(self):
+        self.client.force_authenticate(user=self.member.user)
         data = {
             "nickname": "Bobby B",
             "rating": 999999999,
-            "wins": 1337,
         }
         self.assertNotEqual(self.member.nickname, data["nickname"])
         self.assertNotEqual(self.member.rating, data["rating"])
-        self.assertNotEqual(self.member.wins, data["wins"])
 
         response = self.client.patch(self.url, data=data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertNotEqual(response.data["nickname"], str(self.member.nickname))
         self.assertEqual(response.data["rating"], self.member.rating)
-        self.assertEqual(response.data["wins"], self.member.wins)
 
         self.member.refresh_from_db()
 
         self.assertEqual(self.member.nickname, data["nickname"])
         self.assertNotEqual(self.member.rating, data["rating"])
-        self.assertNotEqual(self.member.wins, data["wins"])
 
 
 class LeaderboardMatchViewTests(APITestCase):
@@ -155,7 +153,7 @@ class LeaderboardMatchViewTests(APITestCase):
         self.player_b = factories.LeaderboardMemberFactory(
             leaderboard=self.player_a.leaderboard
         )
-        self.client.force_authenticate(user=self.player_a)
+        self.client.force_authenticate(user=self.player_a.user)
         self.url = reverse("leaderboards:leaderboard-add-match")
 
     def test_create_success(self):

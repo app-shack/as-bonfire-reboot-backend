@@ -29,9 +29,35 @@ class LeaderboardMember(UUIDModel, TimestampedModel):
         # Prevents math range overflow when calculating elo
         validators=[MinValueValidator(-10000.0), MaxValueValidator(10000.0)],
     )
-    wins = models.PositiveIntegerField(default=0)
-    losses = models.PositiveIntegerField(default=0)
-    ties = models.PositiveIntegerField(default=0)
+
+    @property
+    def wins(self):
+        return (
+            LeaderboardMatch.objects.filter(
+                player_a=self, result=LeaderboardMatch.MatchResult.PLAYER_A_WIN
+            ).count()
+            + LeaderboardMatch.objects.filter(
+                player_b=self, result=LeaderboardMatch.MatchResult.PLAYER_B_WIN
+            ).count()
+        )
+
+    @property
+    def losses(self):
+        return (
+            LeaderboardMatch.objects.filter(
+                player_a=self, result=LeaderboardMatch.MatchResult.PLAYER_B_WIN
+            ).count()
+            + LeaderboardMatch.objects.filter(
+                player_b=self, result=LeaderboardMatch.MatchResult.PLAYER_A_WIN
+            ).count()
+        )
+
+    @property
+    def ties(self):
+        return LeaderboardMatch.objects.filter(
+            (models.Q(player_a=self) | models.Q(player_b=self)),
+            result=LeaderboardMatch.MatchResult.TIE,
+        ).count()
 
     def __str__(self):
         return f"{self.nickname} ({self.user})"
@@ -75,18 +101,12 @@ class LeaderboardMatch(UUIDModel, TimestampedModel):
         if self.result == LeaderboardMatch.MatchResult.PLAYER_A_WIN:
             score_a = 1.0
             score_b = 0.0
-            player_a.wins += 1
-            player_b.losses += 1
         elif result == LeaderboardMatch.MatchResult.PLAYER_B_WIN:
             score_a = 0.0
             score_b = 1.0
-            player_a.losses += 1
-            player_b.wins += 1
         else:
             score_a = 0.5
             score_b = 0.5
-            player_a.ties += 1
-            player_b.ties += 1
 
         # https://en.wikipedia.org/wiki/Elo_rating_system#Mathematical_details
         elo_a = 1 / (1 + math.pow(10, (player_b.rating - player_a.rating) / 400))

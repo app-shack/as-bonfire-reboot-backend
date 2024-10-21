@@ -10,10 +10,10 @@ class LeaderboardMatchTests(APITestCase):
 
     def test_elo_success(self):
         player_a = factories.LeaderboardMemberFactory(
-            rating=1000.0, losses=0, ties=0, wins=0, leaderboard=self.leaderboard
+            rating=1000.0, leaderboard=self.leaderboard
         )
         player_b = factories.LeaderboardMemberFactory(
-            rating=1000.0, losses=0, ties=0, wins=0, leaderboard=self.leaderboard
+            rating=1000.0, leaderboard=self.leaderboard
         )
         data = {
             "player_a": player_a,
@@ -37,10 +37,10 @@ class LeaderboardMatchTests(APITestCase):
 
     def test_elo_zero(self):
         player_a = factories.LeaderboardMemberFactory(
-            rating=1000.0, losses=0, ties=0, wins=0, leaderboard=self.leaderboard
+            rating=1000.0, leaderboard=self.leaderboard
         )
         player_b = factories.LeaderboardMemberFactory(
-            rating=0.0, losses=0, ties=0, wins=0, leaderboard=self.leaderboard
+            rating=0.0, leaderboard=self.leaderboard
         )
         data = {
             "player_a": player_a,
@@ -64,10 +64,10 @@ class LeaderboardMatchTests(APITestCase):
 
     def test_tie(self):
         player_a = factories.LeaderboardMemberFactory(
-            rating=1000.0, losses=0, ties=0, wins=0, leaderboard=self.leaderboard
+            rating=1000.0, leaderboard=self.leaderboard
         )
         player_b = factories.LeaderboardMemberFactory(
-            rating=1000.0, losses=0, ties=0, wins=0, leaderboard=self.leaderboard
+            rating=1000.0, leaderboard=self.leaderboard
         )
         data = {
             "player_a": player_a,

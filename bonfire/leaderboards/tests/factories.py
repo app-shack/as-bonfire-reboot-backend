@@ -21,9 +21,6 @@ class LeaderboardMemberFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     nickname = factory.Faker("name")
     rating = factory.Faker("pyfloat", min_value=-10000.0, max_value=10000.0)
-    wins = factory.Faker("pyint")
-    losses = factory.Faker("pyint")
-    ties = factory.Faker("pyint")
 
 
 class LeaderboardMatchFactory(factory.django.DjangoModelFactory):
