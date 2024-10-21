@@ -62,7 +62,6 @@ class LeaderboardMatch(UUIDModel, TimestampedModel):
     result = models.CharField(
         max_length=255,
         choices=MatchResult.choices,
-        default=MatchResult.TIE,
     )
 
     objects = models.Manager()
