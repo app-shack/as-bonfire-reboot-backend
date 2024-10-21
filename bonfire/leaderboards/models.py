@@ -104,9 +104,13 @@ class LeaderboardMatch(UUIDModel, TimestampedModel):
         elif result == LeaderboardMatch.MatchResult.PLAYER_B_WIN:
             score_a = 0.0
             score_b = 1.0
-        else:
+        elif result == LeaderboardMatch.MatchResult.TIE:
             score_a = 0.5
             score_b = 0.5
+        else:
+            raise ValueError(
+                "Invalid result. Must be one of [tie, player_a_win, player_b_win]."
+            )
 
         # https://en.wikipedia.org/wiki/Elo_rating_system#Mathematical_details
         elo_a = 1 / (1 + math.pow(10, (player_b.rating - player_a.rating) / 400))
