@@ -41,8 +41,11 @@ class LeaderboardMember(UUIDModel, TimestampedModel):
     class Meta:
         constraints = [
             models.UniqueConstraint(
+                fields=["leaderboard", "user"], name="unique_leaderboard_user"
+            ),
+            models.UniqueConstraint(
                 fields=["leaderboard", "nickname"], name="unique_leaderboard_nickname"
-            )
+            ),
         ]
 
 
