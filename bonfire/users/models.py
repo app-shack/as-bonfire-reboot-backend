@@ -109,10 +109,13 @@ class User(UUIDModel, TimestampedModel, AbstractBaseUser, PermissionsMixin):
         self.last_name = r.user.profile.last_name
         self.save()
 
-        if self.has_profile_image:
-            self.userprofileimage.delete()
+        if r.user.profile.image_original is not None:
+            if self.has_profile_image:
+                self.userprofileimage.delete()
 
-        UserProfileImage.objects.create_from_url(self, r.user.profile.image_original)
+            UserProfileImage.objects.create_from_url(
+                self, r.user.profile.image_original
+            )
 
 
 def get_user_profile_image_filename(instance, filename):

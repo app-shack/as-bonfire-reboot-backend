@@ -1,4 +1,5 @@
 from dataclasses import dataclass, fields
+from typing import Optional
 
 
 class BaseResponse:
@@ -12,11 +13,12 @@ class BaseResponse:
 @dataclass
 class EmailSearchUserProfile(BaseResponse):
     email: str
-    image_original: str
-    is_custom_image: bool
     first_name: str
     last_name: str
     phone: str
+
+    image_original: Optional[str] = None
+    is_custom_image: Optional[bool] = None
 
 
 @dataclass
