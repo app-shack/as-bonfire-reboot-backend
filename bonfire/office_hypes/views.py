@@ -27,9 +27,15 @@ class TodaysAttendanceView(generics.RetrieveAPIView):
             .count()
         )
 
+        today = now()
         total_checked_in_percentage = 0
-        if slack_ids:
-            total_checked_in_percentage = round(num_check_ins / len(slack_ids), 2)
+        office_check_ins = 0
+        for office in serializers.Office.values:
+            check_ins = hype._calculate_office_check_ins(today.date(), office).count()
+            office_check_ins += check_ins
+
+        if office_check_ins:
+            total_checked_in_percentage = round(office_check_ins / num_check_ins, 2)
 
         return {"total_checked_in_percentage": total_checked_in_percentage}
 

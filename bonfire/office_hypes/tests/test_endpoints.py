@@ -16,12 +16,19 @@ class TodaysAttendanceViewTests(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = UserFactory()
+        cls.user_2 = UserFactory()
 
         UserFactory()
 
         SlackMessageFactory(
             slack_user=cls.user.slack_id,
             slack_channel=cls.SLACK_WORKING_LOCATION_CHANNEL,
+            message="dragon",
+        )
+        SlackMessageFactory(
+            slack_user=cls.user_2.slack_id,
+            slack_channel=cls.SLACK_WORKING_LOCATION_CHANNEL,
+            message="wfh",
         )
         SlackMessageFactory(
             slack_user=cls.user.slack_id,

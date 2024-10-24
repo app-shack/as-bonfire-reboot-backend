@@ -24,7 +24,7 @@ def calculate_hype(date: date, office: serializers.Office):
     }
 
 
-def _calculate_hype_number(date: date, office: serializers.Office):
+def _calculate_office_check_ins(date: date, office: serializers.Office):
     search_vector = SearchQuery(" | ".join(HYPE_MATCHES[office]), search_type="raw")
 
     first_msg_from_user = (
@@ -38,7 +38,7 @@ def _calculate_hype_number(date: date, office: serializers.Office):
         .values_list("pk")
     )
 
-    msgs = (
+    return (
         SlackMessage.objects.filter(pk__in=first_msg_from_user)
         .annotate(
             search=SearchVector("message"),
@@ -46,6 +46,10 @@ def _calculate_hype_number(date: date, office: serializers.Office):
         .filter(search=search_vector)
         .values_list("pk", flat=True)
     )
+
+
+def _calculate_hype_number(date: date, office: serializers.Office):
+    msgs = _calculate_office_check_ins(date, office)
 
     num_reactions = SlackReaction.objects.filter(
         slack_user__in=User.objects.active_slack_users().values("slack_id"),
